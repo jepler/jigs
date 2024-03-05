@@ -22,7 +22,7 @@ jobs:
       with:
         python-version: 3.x
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: pre-commit
       uses: pre-commit/action@v3.0.0
@@ -41,7 +41,7 @@ jobs:
   test-release:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -49,10 +49,7 @@ jobs:
         python-version: 3.11
 
     - name: install deps
-      run: pip install -r requirements-dev.txt
-
-#    - name: check types with mypy
-#      run: make
+      run: pip install build wheel
 
     - name: Build release
       run: python -mbuild

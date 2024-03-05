@@ -21,7 +21,7 @@ jobs:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -30,8 +30,7 @@ jobs:
 
     - name: Install deps
       run: |
-        python -mpip install wheel
-        python -mpip install -r requirements-dev.txt
+        python -mpip install build wheel
 
     - name: Build release
       run: python -mbuild
