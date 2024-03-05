@@ -18,7 +18,7 @@ jobs:
     steps:
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.x
 
@@ -33,7 +33,7 @@ jobs:
 
     - name: Upload patch
       if: failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: patch
         path: ~/pre-commit.patch
@@ -44,7 +44,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.11
 
@@ -55,7 +55,7 @@ jobs:
       run: python -mbuild
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: dist
         path: dist/*
