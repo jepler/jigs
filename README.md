@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-3.0-only
 
 # Jeffs Image Generating Scripts (jigs)
 
-## Purpose 
+## Purpose
 
 I found I was writing a number of bespoke scripts for wrapping around
 image generation pipelines like Stable Diffusion.

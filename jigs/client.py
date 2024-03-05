@@ -4,18 +4,14 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-import binascii
 import hashlib
 import io
 import json
 import re
-import shlex
 import subprocess
-import sys
 
 import httpx
 from PIL import Image
-from PIL.PngImagePlugin import PngInfo
 
 from rich.console import Console
 from rich.table import Table
@@ -40,14 +36,14 @@ unsafe_chars = re.compile(r"[^a-zA-Z0-9-_]+")
 )
 @click.option(
     "--no-elaborate",
-    'elaborate_instruction',
-    flag_value='',
+    "elaborate_instruction",
+    flag_value="",
     help="Disable prompt elaboration, equivalent to --elaborate-instruction=''.",
-    )
+)
 @click.option(
     "--elaborate-instruction",
     type=str,
-    #default="echo {}",
+    # default="echo {}",
     default="Elaborate each query into a more verbose prompt for image generation. Do not output any other text or commentary. Target length: 50 words",
     help="Used as the instruction to some LLM (evaluated on the server side) to elaborate the prompt. If the elaborate instruction is empty, no elaboration is performed.",
 )

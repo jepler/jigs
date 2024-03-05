@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 Jeff Epler
+#
+# SPDX-License-Identifier: CC0-1.0
+
 *.egg-info
 __pycache__
 jigs/__version__.py

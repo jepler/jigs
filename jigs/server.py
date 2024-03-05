@@ -20,14 +20,15 @@ from PIL.PngImagePlugin import PngInfo
 
 STEPS = 8
 USE_UNET = True
-elaborate_command = 'chap -S {0} ask --no-print-prompt -n /dev/null {1}'
+elaborate_command = "chap -S {0} ask --no-print-prompt -n /dev/null {1}"
 
 base = "stabilityai/stable-diffusion-xl-base-1.0"
 repo = "ByteDance/SDXL-Lightning"
 
+
 def main():
     if USE_UNET:
-        ckpt = f"sdxl_lightning_{STEPS}step_unet.safetensors" # Use the correct ckpt for your step setting!
+        ckpt = f"sdxl_lightning_{STEPS}step_unet.safetensors"  # Use the correct ckpt for your step setting!
 
         # Load model.
         unet = UNet2DConditionModel.from_config(base, subfolder="unet").to(
@@ -41,7 +42,9 @@ def main():
     else:
         ckpt = f"sdxl_lightning_{STEPS}step_lora.safetensors"  # Use the correct ckpt for your step setting!
 
-        pipe = StableDiffusionXLPipeline.from_pretrained(base, torch_dtype=torch.float16, variant="fp16").to("cuda")
+        pipe = StableDiffusionXLPipeline.from_pretrained(
+            base, torch_dtype=torch.float16, variant="fp16"
+        ).to("cuda")
         pipe.load_lora_weights(hf_hub_download(repo, ckpt))
         pipe.fuse_lora()
     pipe.enable_model_cpu_offload()
@@ -50,7 +53,6 @@ def main():
     pipe.scheduler = EulerDiscreteScheduler.from_config(
         pipe.scheduler.config, timestep_spacing="trailing"
     )
-
 
     default_metadata = {
         "base": base,
@@ -70,12 +72,14 @@ def main():
             metadata.add_text(k, str(v))
 
         prompt = request.params.get("prompt")
-        
-        if (elaborate_instruction := request.params.get("elaborate_instruction", "")):
+
+        if elaborate_instruction := request.params.get("elaborate_instruction", ""):
             metadata.add_text("original_prompt", prompt)
             metadata.add_text("elaborate_instruction", elaborate_instruction)
             prompt = subprocess.check_output(
-                elaborate_command.format(shlex.quote(elaborate_instruction), shlex.quote(prompt)),
+                elaborate_command.format(
+                    shlex.quote(elaborate_instruction), shlex.quote(prompt)
+                ),
                 shell=True,
                 encoding="utf-8",
                 errors="replace",
@@ -104,8 +108,8 @@ def main():
         response.content_type = "image/png"
         return contents
 
-
     run(host="", port=8072, debug=True)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

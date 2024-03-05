@@ -1,0 +1,42 @@
+# SPDX-FileCopyrightText: 2021 Jeff Epler
+#
+# SPDX-License-Identifier: MIT
+
+name: Release on pypi
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release:
+
+    runs-on: ubuntu-22.04
+    permissions:
+      # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
+    steps:
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"
+
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+
+    - name: Install deps
+      run: |
+        python -mpip install wheel
+        python -mpip install -r requirements-dev.txt
+
+    - name: Build release
+      run: python -mbuild
+
+    - name: Upload release
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        packages-dir: dist/
