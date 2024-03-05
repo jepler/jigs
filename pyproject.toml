@@ -1,0 +1,60 @@
+# SPDX-FileCopyrightText: 2021 Jeff Epler
+#
+# SPDX-License-Identifier: MIT
+
+[build-system]
+requires = [
+    "setuptools>=68.2.2",
+    "setuptools_scm[toml]>=6.0",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "."}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project]
+name="jigs"
+authors = [{name = "Jeff Epler", email = "jepler@gmail.com"}]
+description = "Jeff's Image Generating Scripts"
+dynamic = ["readme","version","dependencies","optional-dependencies"]
+requires-python = ">=3.11"
+keywords = ["image-generation", "stable-diffusion"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+[project.urls]
+homepage = "https://github.com/jepler/jigs"
+repository = "https://github.com/jepler/jigs"
+
+[project.scripts]
+jigs-server = "jigs.server:main"
+jigs-client = "jigs.client:main"
+
+[tool.setuptools_scm]
+write_to = "jigs/__version__.py"
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md"], content-type="text/markdown"}
+dependencies = {file = "requirements.txt"}
+
+[tool.setuptools.dynamic.optional-dependencies]
+server = {file = "requirements_server.txt"}
+
+[tool.setuptools.package-data]
+"pkgname" = ["py.typed"]
+
+[tool.mypy]
+mypy_path = ["src"]
+warn_unused_ignores = false
+warn_redundant_casts = true
+strict = true
+packages = ["jigs"]

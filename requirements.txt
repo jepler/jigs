@@ -1,0 +1,7 @@
+# Dependencies for jigs in client-only mode
+# (dependencies for server mode are in requirements_server.txt)
+
+httpx
+click
+pillow
+rich

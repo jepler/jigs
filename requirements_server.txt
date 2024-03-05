@@ -1,0 +1,9 @@
+# Dependencies for jigs in server mode,
+# in additional to base requirements in requirements.txt
+
+accelerate
+bottle
+chap
+diffusers
+torch
+transformers
