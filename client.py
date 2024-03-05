@@ -41,7 +41,8 @@ unsafe_chars = re.compile(r"[^a-zA-Z0-9-_]+")
 @click.option(
     "--no-elaborate",
     'elaborate_instruction',
-    flag_value=''
+    flag_value='',
+    help="Disable prompt elaboration, equivalent to --elaborate-instruction=''.",
     )
 @click.option(
     "--elaborate-instruction",
@@ -54,7 +55,7 @@ unsafe_chars = re.compile(r"[^a-zA-Z0-9-_]+")
     "--size",
     type=str,
     default="1024x1024",
-    help="Valid values include 512x512, 768x768 or 1024x1024",
+    help="Valid values include 512x512, 768x768 or 1024x1024, depending on the model",
 )
 @click.option(
     "--action",
