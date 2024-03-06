@@ -37,7 +37,7 @@ repository = "https://github.com/jepler/jigs"
 
 [project.scripts]
 jigs-server = "jigs.server:main"
-jigs-client = "jigs.client:main"
+jigs = "jigs.client:main"
 
 [tool.setuptools_scm]
 write_to = "jigs/__version__.py"

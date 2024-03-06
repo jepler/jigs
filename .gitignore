@@ -5,3 +5,4 @@
 *.egg-info
 __pycache__
 jigs/__version__.py
+dist

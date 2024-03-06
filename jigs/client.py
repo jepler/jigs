@@ -9,6 +9,7 @@ import io
 import json
 import re
 import subprocess
+import urllib
 
 import httpx
 from PIL import Image
@@ -59,8 +60,16 @@ unsafe_chars = re.compile(r"[^a-zA-Z0-9-_]+")
     default="firefox",
     help="Executable program to run on each image (e.g., open, firefox)",
 )
+@click.option(
+    "--url",
+    type=str,
+    envvar="JIGS_URL",
+    metavar="URL",
+    default="http://localhost:8072",
+    help="The URL of the server. Defaults to the content of the environment variable JIGS_URL. If JIGS_URL is unset, defaults to http://localhost:8072",
+)
 @click.argument("qstr", nargs=-1, required=False)
-def main(size, steps, action, negative_prompt, elaborate_instruction, qstr=[]):
+def main(size, steps, action, negative_prompt, elaborate_instruction, url, qstr=[]):
     if qstr:
         prompt = " ".join(qstr)
     else:
@@ -69,7 +78,7 @@ def main(size, steps, action, negative_prompt, elaborate_instruction, qstr=[]):
     width, height = map(int, size.split("x"))
 
     response = httpx.post(
-        "http://eric:8072/generate",
+        urllib.parse.urljoin(url, "generate"),
         data={
             "prompt": prompt,
             "negative_prompt": negative_prompt,
