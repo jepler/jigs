@@ -10,6 +10,7 @@ import discord
 from chap.key import get_key
 import httpx
 import hashlib
+from discord.ext import commands
 
 from .core import unsafe_chars
 
@@ -60,7 +61,6 @@ intents.message_content = True
 intents.reactions = True
 
 # client = discord.Client(intents=intents)
-from discord.ext import commands
 
 client = commands.Bot(command_prefix="$$", intents=intents)
 
@@ -114,7 +114,7 @@ async def on_raw_reaction_add(event):
         await generate_common(channel, message.content.removeprefix("!"))
 
 
-@client.command(name="sync")
+@client.hybrid_command(name="sync")
 @commands.is_owner()
 async def sync(ctx):
     print("syncing", ctx)
