@@ -9,6 +9,9 @@ import io
 import discord
 from chap.key import get_key
 import httpx
+import hashlib
+
+from .core import unsafe_chars
 
 elaborate_instruction = "Elaborate each query into a more verbose prompt for image generation. Do not output any other text or commentary. Target length: 50 words"
 width = 1024
@@ -56,9 +59,13 @@ intents.messages = True
 intents.message_content = True
 intents.reactions = True
 
-client = discord.Client(intents=intents)
+# client = discord.Client(intents=intents)
+from discord.ext import commands
+
+client = commands.Bot(command_prefix="$$", intents=intents)
 
 regenerate = "🔁"
+make_art = "🖼️"
 
 
 @client.event
@@ -71,44 +78,52 @@ async def on_message(message):
         prompt = content[1:]
         await generate_common(message.channel, prompt)
 
+    await client.process_commands(message)
+
 
 async def generate_common(channel, prompt):
-    message = await channel.send(content=f"JIGS is now rendering: {prompt}")
-    text_content, image_content = await agenerate(prompt)
-    to_await = [message.edit(content=text_content)]
+    async with channel.typing():
+        prompt = prompt.strip()
+        message = await channel.send(content=f"*thinking about {prompt}*")
+        text_content, image_content = await agenerate(prompt)
+        to_await = [message.edit(content=text_content)]
 
-    if image_content:
-        with io.BytesIO(image_content) as f:
-            to_await.extend(
-                [
-                    message.add_files(
-                        discord.File(f, filename="jigs-image.png", description=prompt)
-                    ),
-                    message.add_reaction(regenerate),
-                ]
-            )
-    return asyncio.gather(*to_await)
-
-
-@client.event
-async def on_reaction_add(reaction, user):
-    print("on_reaction")
-    print(reaction.emoji, str(reaction), repr(reaction))
-    message = reaction.message
-    print(message.author.id, client.user.id)
-    print(reaction.emoji == regenerate)
-    print(str(reaction.emoji) == regenerate)
-    if (
-        message.author.id == client.user.id
-        and reaction.emoji == regenerate
-        and reaction.count > 1
-    ):
-        await generate_common(message.channel, message.content)
+        if image_content:
+            hash = hashlib.sha256(image_content).hexdigest()[:8]
+            filename = f"{unsafe_chars.sub('-', prompt)[:96]}-{hash}.png"
+            with io.BytesIO(image_content) as f:
+                to_await.extend(
+                    [
+                        message.add_files(
+                            discord.File(f, filename=filename, description=prompt)
+                        ),
+                        message.add_reaction(regenerate),
+                    ]
+                )
+        return asyncio.gather(*to_await)
 
 
 @client.event
-async def on_raw_reaction_add(*args):
-    print("on_raw_reaction", args)
+async def on_raw_reaction_add(event):
+    print("on_raw_reaction", event)
+    if event.emoji.name in (regenerate, make_art) and not event.member.bot:
+        guild = event.member.guild
+        channel = await guild.fetch_channel(event.channel_id)
+        message = await channel.fetch_message(event.message_id)
+        print("->", message.content)
+        await generate_common(channel, message.content.removeprefix("!"))
 
+
+@client.command(name="sync")
+@commands.is_owner()
+async def sync(ctx):
+    print("syncing", ctx)
+    await client.tree.sync()
+    print("sync'd", ctx)
+
+
+# @client.hybrid_command(name="gen", description="generate an image")
+# async def gen(ctx, prompt: str):
+#    await generate_common(ctx, prompt)
 
 client.run(TOKEN)
