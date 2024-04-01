@@ -4,6 +4,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
+from aiohttp import web
 import asyncio
 import io
 import discord
@@ -13,6 +14,8 @@ import hashlib
 from discord.ext import commands
 
 from .core import unsafe_chars
+from .server import make_app
+
 
 elaborate_instruction = "Elaborate each query into a more verbose prompt for image generation. Do not output any other text or commentary. Target length: 50 words"
 width = 1024
@@ -60,17 +63,14 @@ intents.messages = True
 intents.message_content = True
 intents.reactions = True
 
-# client = discord.Client(intents=intents)
-
-client = commands.Bot(command_prefix="$$", intents=intents)
+discord_bot = commands.Bot(command_prefix="$$", intents=intents)
 
 regenerate = "🔁"
 make_art = "🖼️"
 
 
-@client.event
+@discord_bot.event
 async def on_message(message):
-    print("on_message")
     if message.author.bot:
         return
     content = message.content
@@ -78,7 +78,7 @@ async def on_message(message):
         prompt = content[1:]
         await generate_common(message.channel, prompt)
 
-    await client.process_commands(message)
+    await discord_bot.process_commands(message)
 
 
 async def generate_common(channel, prompt):
@@ -103,27 +103,46 @@ async def generate_common(channel, prompt):
         return asyncio.gather(*to_await)
 
 
-@client.event
+@discord_bot.event
 async def on_raw_reaction_add(event):
-    print("on_raw_reaction", event)
     if event.emoji.name in (regenerate, make_art) and not event.member.bot:
         guild = event.member.guild
         channel = await guild.fetch_channel(event.channel_id)
         message = await channel.fetch_message(event.message_id)
-        print("->", message.content)
         await generate_common(channel, message.content.removeprefix("!"))
 
 
-@client.hybrid_command(name="sync")
+@discord_bot.hybrid_command(name="sync")
 @commands.is_owner()
 async def sync(ctx):
     print("syncing", ctx)
-    await client.tree.sync()
+    await discord_bot.tree.sync()
     print("sync'd", ctx)
 
 
-# @client.hybrid_command(name="gen", description="generate an image")
+# @discord_bot.hybrid_command(name="gen", description="generate an image")
 # async def gen(ctx, prompt: str):
 #    await generate_common(ctx, prompt)
 
-client.run(TOKEN)
+
+def main():
+    discord_key = web.AppKey("discord", asyncio.Task[None])
+
+    async def background_tasks(app):
+        async with discord_bot:
+            app[discord_key] = asyncio.create_task(discord_bot.start(TOKEN))
+
+            yield
+
+            app[discord_key].cancel()
+            await app[discord_key]
+
+    # generator = make_generator() # TODO: have discord bot directly call generator
+    app = make_app()
+
+    app.cleanup_ctx.append(background_tasks)
+    web.run_app(app, port=8072)
+
+
+if __name__ == "__main__":
+    main()
