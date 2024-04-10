@@ -6,8 +6,9 @@
 # in additional to base requirements in requirements.txt
 
 accelerate
-bottle
+aiohttp
 chap
 diffusers
+discord
 torch
 transformers

@@ -21,12 +21,12 @@ from chap.session import new_session
 from chap.core import get_api
 import click
 
-FAST = False
+FAST = False  # don't actually generate images, for testing everything else...
 MODEL_STEPS = 8
 STEPS = 12  # STEPS
 USE_UNET = True
-elaborate_command = "chap -S {0} ask --no-print-prompt -n /dev/null {1}"
-
+elaborate_command = "chap --backend anthropic -B model:claude-3-haiku-20240307 -S {0} ask --no-print-prompt -n /dev/null {1}"
+DEFAULT_ELABORATE_INSTRUCTION = "Elaborate each input into a full prompt for text2image generation. Do not write any other text. Target length: two sentences."
 base = "stabilityai/stable-diffusion-xl-base-1.0"
 repo = "ByteDance/SDXL-Lightning"
 
@@ -89,7 +89,9 @@ def make_generator():
 
             prompt = request_params.get("prompt")
 
-            if elaborate_instruction := request_params.get("elaborate_instruction", ""):
+            if elaborate_instruction := request_params.get(
+                "elaborate_instruction", DEFAULT_ELABORATE_INSTRUCTION
+            ):
                 metadata.add_text("original_prompt", prompt)
                 metadata.add_text("elaborate_instruction", elaborate_instruction)
                 chap_session = new_session(elaborate_instruction)

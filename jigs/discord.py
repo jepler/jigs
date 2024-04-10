@@ -12,6 +12,9 @@ from chap.key import get_key
 import httpx
 import hashlib
 from discord.ext import commands
+from rich.table import Table
+from rich.console import Console
+from PIL import Image
 
 from .core import unsafe_chars
 from .server import make_app
@@ -21,19 +24,8 @@ elaborate_instruction = "Elaborate each query into a more verbose prompt for ima
 width = 1024
 height = 1024
 
-# fast = True
-fast = False
-
 
 async def agenerate(prompt, negative_prompt=""):
-    if fast:
-        return (
-            prompt,
-            open(
-                "/usr/share/icons/gnome/32x32/places/xfce-trash_empty.png", "rb"
-            ).read(),
-        )
-
     async with httpx.AsyncClient(timeout=30) as client:
         try:
             response = await client.post(
@@ -91,15 +83,33 @@ async def generate_common(channel, prompt):
         if image_content:
             hash = hashlib.sha256(image_content).hexdigest()[:8]
             filename = f"{unsafe_chars.sub('-', prompt)[:96]}-{hash}.png"
-            with io.BytesIO(image_content) as f:
+            with io.BytesIO(image_content) as f, io.StringIO() as out:
+                table = Table(show_header=False, box=None, pad_edge=False)
+                table.add_column("k", justify="left", no_wrap=True)
+                table.add_column("v", justify="left")
+                img = Image.open(f)
+                for k, v in img.info.items():
+                    table.add_row(k, str(v))
+                console = Console(file=out, width=72)
+                console.print(table)
+                table_content = out.getvalue()
+            with io.BytesIO(image_content) as f, io.BytesIO(
+                table_content.encode("utf-8")
+            ) as df:
                 to_await.extend(
                     [
                         message.add_files(
-                            discord.File(f, filename=filename, description=prompt)
+                            discord.File(f, filename=filename, description=prompt),
+                            discord.File(
+                                df,
+                                filename=f"{filename}.txt",
+                                description="generation details",
+                            ),
                         ),
                         message.add_reaction(regenerate),
                     ]
                 )
+
         return asyncio.gather(*to_await)
 
 
