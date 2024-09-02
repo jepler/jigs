@@ -80,7 +80,6 @@ def main(size, steps, action, negative_prompt, elaborate_instruction, url, qstr=
                 prompt = sys.stdin.read()
     else:
         prompt = input("Image description: ")
-    raise SystemExit(f"{qstr=!r} {prompt=!r}")
 
     width, height = map(int, size.split("x"))
 
