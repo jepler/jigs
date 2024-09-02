@@ -19,6 +19,11 @@ from PIL import Image
 from .core import unsafe_chars
 from .server import make_app
 
+import logging
+
+logging.basicConfig()
+logging.getLogger().setLevel(logging.DEBUG)
+
 
 elaborate_instruction = "Elaborate each query into a more verbose prompt for image generation. Do not output any other text or commentary. Target length: 50 words"
 width = 1024
@@ -115,10 +120,19 @@ async def generate_common(channel, prompt):
 
 @discord_bot.event
 async def on_raw_reaction_add(event):
-    if event.emoji.name in (regenerate, make_art) and not event.member.bot:
-        guild = event.member.guild
-        channel = await guild.fetch_channel(event.channel_id)
+    print(type(event), event, discord_bot.application_id)
+    if event.member and event.member.bot:
+        return
+    if event.user_id == discord_bot.application_id:
+        return
+    if event.emoji.name in (regenerate, make_art):
+        # guild = event.member.guild
+        # channel = await guild.fetch_channel(event.channel_id)
+        channel = discord_bot.get_channel(event.channel_id)
+        if channel is None:
+            channel = await discord_bot.fetch_channel(event.channel_id)
         message = await channel.fetch_message(event.message_id)
+        print(message)
         await generate_common(channel, message.content.removeprefix("!"))
 
 
