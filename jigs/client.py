@@ -9,6 +9,7 @@ import io
 import json
 import re
 import subprocess
+import sys
 import urllib
 
 import httpx
@@ -72,8 +73,14 @@ unsafe_chars = re.compile(r"[^a-zA-Z0-9-_]+")
 def main(size, steps, action, negative_prompt, elaborate_instruction, url, qstr=[]):
     if qstr:
         prompt = " ".join(qstr)
+        if prompt == "-":
+            if sys.stdin.isatty():
+                prompt = input("Image description: ")
+            else:
+                prompt = sys.stdin.read()
     else:
         prompt = input("Image description: ")
+    raise SystemExit(f"{qstr=!r} {prompt=!r}")
 
     width, height = map(int, size.split("x"))
 
