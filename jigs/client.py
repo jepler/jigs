@@ -108,7 +108,7 @@ def main(size, steps, action, negative_prompt, elaborate_instruction, url, qstr=
     try:
         data = response.read()
         hash = hashlib.sha256(data).hexdigest()[:8]
-        filename = f"{unsafe_chars.sub('-', prompt)[:96]}-{hash}.png"
+        filename = f"{unsafe_chars.sub('-', prompt).strip('-')[:64]}-{hash}.png"
         print(f"Saving to {filename}")
         with open(filename, "wb") as f:
             f.write(data)
